@@ -7,10 +7,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import static java.awt.image.ImageObserver.HEIGHT;
-import static java.awt.image.ImageObserver.WIDTH;
 import java.util.Random;
 import javax.swing.Timer;
 
@@ -21,11 +18,11 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
     static final int UNIT_SIZE = 20;
     static final int NUMBER_OF_UNITS = (WIDTH * HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
 
-    // hold x and y coordinates for body parts of the snake
+    // coordenadas del snake
     final int x[] = new int[NUMBER_OF_UNITS];
     final int y[] = new int[NUMBER_OF_UNITS];
 
-    // initial length of the snake
+    // inciializando variables de snake
     int length = 5;
     int foodEaten;
     int foodX;
@@ -53,11 +50,21 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
     public void play() {
         addFood();
         running = true;
-
         timer = new Timer(80, (ActionListener) this);
         timer.start();
     }
 
+    public void checkCollisions() {
+    // Comparar la cabeza con cada parte del cuerpo
+    for (int i = length; i > 0; i--) {
+        if (x[0] == x[i] && y[0] == y[i]) {
+            running = false;
+            break;
+        }
+    }
+}
+
+    
     public void draw(Graphics graphics) {
 
         if (running) {
@@ -84,8 +91,8 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
     public void actionPerformed(ActionEvent arg0) {
         if (running) {
             move();
+            checkCollisions();
             checkFood();
-            //checkHit();
         }
         repaint();
     }
@@ -100,7 +107,7 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
 
     public void move() {
         for (int i = length; i > 0; i--) {
-            // shift the snake one unit to the desired direction to create a move
+            
             x[i] = x[i - 1];
             y[i] = y[i - 1];
         }
