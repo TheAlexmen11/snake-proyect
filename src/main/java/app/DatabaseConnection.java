@@ -5,11 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final String URL = "jdbc:mysql://localhost:3306/nombre_de_la_base_de_datos";
+    private static final String URL = "jdbc:mysql://localhost:3306/snake_BD";
     // Cambia el nombre de la base de datos por el de tu base de datos
     private static final String USER = "root";
-    private static final String PASSWORD = "contaseña de la base de datos";
-    // Cambia la contraseña por la de tu base de datos
+    private static final String PASSWORD = "Jose76572260@";
 
     private static Connection connection;
 
