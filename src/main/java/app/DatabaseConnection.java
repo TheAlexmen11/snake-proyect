@@ -8,7 +8,7 @@ public class DatabaseConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/snake_BD";
     // Cambia el nombre de la base de datos por el de tu base de datos
     private static final String USER = "root";
-    private static final String PASSWORD = "123456";
+    private static final String PASSWORD = "1234567";
 
     private static Connection connection;
 
