@@ -12,7 +12,7 @@ public class GameFrame extends javax.swing.JFrame {
 
     public GameFrame() {
 
-        panel = new GamePanel();
+        //panel = new GamePanel();
         this.add(panel);
         panel.setBounds(0, 0, 500, 500);
         panel.setOpaque(false);

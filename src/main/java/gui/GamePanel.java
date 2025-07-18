@@ -13,6 +13,8 @@ import javax.swing.Timer;
 
 public class GamePanel extends javax.swing.JPanel implements ActionListener {
 
+    private final test frame;
+    
     static final int WIDTH = 500;
     static final int HEIGHT = 500;
     static final int UNIT_SIZE = 20;
@@ -31,8 +33,10 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
     boolean running = false;
     Random random;
     Timer timer;
+    
 
-    public GamePanel() {
+    public GamePanel(test frame) {
+        this.frame = frame;
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.DARK_GRAY);
         this.setFocusable(true);
@@ -55,16 +59,15 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
     }
 
     public void checkCollisions() {
-    // Comparar la cabeza con cada parte del cuerpo
-    for (int i = length; i > 0; i--) {
-        if (x[0] == x[i] && y[0] == y[i]) {
-            running = false;
-            break;
+        // Comparar la cabeza con cada parte del cuerpo
+        for (int i = length; i > 0; i--) {
+            if (x[0] == x[i] && y[0] == y[i]) {
+                running = false;
+                break;
+            }
         }
     }
-}
 
-    
     public void draw(Graphics graphics) {
 
         if (running) {
@@ -107,7 +110,7 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
 
     public void move() {
         for (int i = length; i > 0; i--) {
-            
+
             x[i] = x[i - 1];
             y[i] = y[i - 1];
         }
