@@ -13,7 +13,7 @@ import javax.swing.Timer;
 
 public class GamePanel extends javax.swing.JPanel implements ActionListener {
 
-    private final test frame;
+    //private final test frame;
     
     static final int WIDTH = 500;
     static final int HEIGHT = 500;
@@ -35,8 +35,8 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
     Timer timer;
     
 
-    public GamePanel(test frame) {
-        this.frame = frame;
+    public GamePanel() {
+       //this.frame = frame;
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.DARK_GRAY);
         this.setFocusable(true);

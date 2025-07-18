@@ -30,8 +30,8 @@ public class test extends javax.swing.JFrame {
         contenedor = new JPanel(cardLayout);
 
         // Agrega los paneles al contenedor
-        contenedor.add(new GameLobby(this), "MENU");
-        contenedor.add(new GamePanel(this), "JUEGO");
+        //contenedor.add(new GameLobby(this), "MENU");
+        //contenedor.add(new GamePanel(this), "JUEGO");
 
         add(contenedor);
         setVisible(true);
