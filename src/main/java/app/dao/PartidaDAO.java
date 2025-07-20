@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.DefaultTableModel;
+import listas.ListaRankingOrdenada;
 
 public class PartidaDAO {
 
@@ -59,23 +60,28 @@ public class PartidaDAO {
     }
 
     public void cargarDatosTabla(DefaultTableModel tableModel) throws SQLException {
-        List<TRanking> lista = obtenerRankingMaximo();
+        List<TRanking> listaDesdeBD = obtenerRankingMaximo();
 
-        // Limpiar la tabla
-        tableModel.setRowCount(0);
-        int index = 0;
-        // Agregar los datos de los clientes al modelo
-        for (TRanking listaRanking : lista) {
-            tableModel.addRow(new Object[]{
-                index ,
-                listaRanking.getNombre(),
-                listaRanking.getPuntos(),});
-            index++;
+        ListaRankingOrdenada listaOrdenada = new ListaRankingOrdenada();
+        for (TRanking r : listaDesdeBD) {
+            listaOrdenada.insertarOrdenado(r);
         }
 
+        List<TRanking> listaFinal = listaOrdenada.aLista();
+
+        tableModel.setRowCount(0);
+        int index = 1;
+        for (TRanking ranking : listaFinal) {
+            tableModel.addRow(new Object[]{
+                index,
+                ranking.getNombre(),
+                ranking.getPuntos()
+            });
+            index++;
+        }
     }
 
-    public Partida buscarPartidaPorJugador (int idJugador) throws SQLException {
+    public Partida buscarPartidaPorJugador(int idJugador) throws SQLException {
         String sql = "SELECT * FROM partida WHERE id_jugador = ?";
         try (Connection conn = DatabaseConnection.getInstance(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idJugador);
@@ -93,10 +99,10 @@ public class PartidaDAO {
                 }
             }
         }
-        return null; 
+        return null;
     }
 
-    public void actualizarPartida(int idPartida, int puntos,boolean paused) throws SQLException {
+    public void actualizarPartida(int idPartida, int puntos, boolean paused) throws SQLException {
         String sql = "UPDATE partida SET puntos = ?, en_progreso = ? WHERE id_partida = ?";
         try (Connection conn = DatabaseConnection.getInstance(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, puntos);
