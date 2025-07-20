@@ -8,9 +8,15 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.util.Random;
 
 import javax.swing.*;
+
+import app.dao.PartidaDAO;
+import app.dao.PlayerDAO;
+import app.model.Partida;
+import app.model.Player;
 
 public class GamePanel extends JPanel implements ActionListener {
 
@@ -18,6 +24,7 @@ public class GamePanel extends JPanel implements ActionListener {
     static final int HEIGHT = 500;
     static final int UNIT_SIZE = 20;
     static final int NUMBER_OF_UNITS = (WIDTH * HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
+    String nombreJugador;
 
     final int[] x = new int[NUMBER_OF_UNITS];
     final int[] y = new int[NUMBER_OF_UNITS];
@@ -36,8 +43,9 @@ public class GamePanel extends JPanel implements ActionListener {
 
     GameFrame frame;
 
-    public GamePanel(GameFrame frame) {
+    public GamePanel(GameFrame frame, String nombreJugador) {
         this.frame = frame;
+        this.nombreJugador = nombreJugador;
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.DARK_GRAY);
         setFocusable(true);
@@ -55,9 +63,9 @@ public class GamePanel extends JPanel implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (gameOver) return;
-
+                
                 paused = !paused;
-
+                
                 if (paused) {
                     timer.stop();
                     frame.showButtons();
@@ -66,7 +74,8 @@ public class GamePanel extends JPanel implements ActionListener {
                     frame.hideButtons();
                     requestFocusInWindow();
                 }
-
+                
+                insertarPartida(nombreJugador,foodEaten,foodX, foodY, paused); 
                 repaint();
             }
         });
@@ -82,13 +91,23 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void restartGame() {
+        for (int i = 0; i < length; i++) {
+            x[i] = 100 - i * UNIT_SIZE;
+            y[i] = 100;
+        }
+
         direction = 'D';
         length = 5;
         foodEaten = 0;
         running = true;
         paused = false;
         gameOver = false;
+
         addFood();
+
+        if (timer != null) {
+            timer.stop();
+        }
         timer.start();
         repaint();
     }
@@ -184,8 +203,11 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
 
-        if (!running) {
+        if (!running && !gameOver) {
             gameOver = true;
+            new Thread(() -> {
+                insertarPartida(nombreJugador, 0, foodX, foodY, false);
+            }).start();
             timer.stop();
             frame.showButtons();
         }
@@ -218,7 +240,35 @@ public class GamePanel extends JPanel implements ActionListener {
             paused = false;
             timer.start();
             frame.hideButtons();
-            requestFocusInWindow(); // Asegura que reciba eventos del teclado
+            requestFocusInWindow();
+        }
+    }
+
+    public int[] getSnakeX() {
+    return java.util.Arrays.copyOf(x, length);
+    }
+
+    public int[] getSnakeY() {
+        return java.util.Arrays.copyOf(y, length);
+    }
+
+    public int getScore() {
+    return foodEaten;
+    }
+
+    public void insertarPartida(String nombreJugador, int puntos, int foodX, int foodY, boolean paused) {
+        try {
+            System.out.println("Insertando partida para el jugador: " + nombreJugador);
+            PlayerDAO playerDAO = new PlayerDAO();
+            PartidaDAO partidaDAO = new PartidaDAO();
+            Player player = playerDAO.buscarPorNombre(nombreJugador);
+            Partida partidaAnterior = partidaDAO.buscarPartidaPorJugador(player.getIdJugador());
+
+            partidaDAO.actualizarPartida(partidaAnterior.getIdPartida(), puntos, paused);
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "❌ al insertar data: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

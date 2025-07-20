@@ -75,4 +75,35 @@ public class PartidaDAO {
 
     }
 
+    public Partida buscarPartidaPorJugador (int idJugador) throws SQLException {
+        String sql = "SELECT * FROM partida WHERE id_jugador = ?";
+        try (Connection conn = DatabaseConnection.getInstance(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idJugador);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Partida p = new Partida();
+                    p.setIdPartida(rs.getInt("id_partida"));
+                    p.setIdJugador(rs.getInt("id_jugador"));
+                    p.setPuntos(rs.getInt("puntos"));
+                    p.setEnProgreso(rs.getBoolean("en_progreso"));
+                    p.setFechaInicio(rs.getTimestamp("fecha_inicio").toLocalDateTime());
+                    Timestamp fin = rs.getTimestamp("fecha_fin");
+                    p.setFechaFin(fin != null ? fin.toLocalDateTime() : null);
+                    return p;
+                }
+            }
+        }
+        return null; 
+    }
+
+    public void actualizarPartida(int idPartida, int puntos,boolean paused) throws SQLException {
+        String sql = "UPDATE partida SET puntos = ?, en_progreso = ? WHERE id_partida = ?";
+        try (Connection conn = DatabaseConnection.getInstance(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, puntos);
+            stmt.setInt(2, paused ? 1 : 0);
+            stmt.setInt(3, idPartida);
+            stmt.executeUpdate();
+        }
+    }
+
 }

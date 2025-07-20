@@ -35,4 +35,21 @@ public class PlayerDAO {
         }
         return lista;
     }
+
+    public Player buscarPorNombre(String nombre) throws SQLException {
+    String sql = "SELECT * FROM player WHERE nombre = ?";
+        try (Connection conn = DatabaseConnection.getInstance();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nombre);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Player p = new Player();
+                    p.setIdJugador(rs.getInt("id_jugador"));
+                    p.setNombre(rs.getString("nombre"));
+                    return p;
+                }
+            }
+        }
+        return null; 
+    }
 }

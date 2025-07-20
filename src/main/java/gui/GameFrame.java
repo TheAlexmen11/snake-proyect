@@ -14,6 +14,7 @@ public class GameFrame extends JFrame {
 
     static final int WIDTH = 515;
     static final int HEIGHT = 535;
+    private String nombreJugador;
 
     GameFondo fondo;
     GamePanel panel;
@@ -22,9 +23,9 @@ public class GameFrame extends JFrame {
     NeonButton botonRanking;
     NeonButton botonContinuar;
 
-    public GameFrame() {
+    public GameFrame(String nombreJugador) {
         super("Snake");
-
+        this.nombreJugador = nombreJugador;
         setLayout(null); // Necesario para posicionar manualmente
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -33,7 +34,7 @@ public class GameFrame extends JFrame {
         setLocationRelativeTo(null);
 
         // Panel del juego
-        panel = new GamePanel(this);
+        panel = new GamePanel(this, nombreJugador);
         panel.setBounds(0, 0, 500, 500);
         panel.setOpaque(false);
         add(panel);

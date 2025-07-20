@@ -1,7 +1,9 @@
 
 package gui;
 
+import app.dao.PartidaDAO;
 import app.dao.PlayerDAO;
+import app.model.Partida;
 import app.model.Player;
 
 import javax.swing.*;
@@ -41,7 +43,7 @@ public class VentanaInicio extends JFrame {
         lblTitulo.setBounds(100, 20, 300, 40);
         fondo.add(lblTitulo);
 
-        txtUsuario = new JTextField("Usuario...");
+        txtUsuario = new JTextField("");
         txtUsuario.setBounds(150, 80, 200, 30);
         fondo.add(txtUsuario);
 
@@ -91,19 +93,36 @@ public class VentanaInicio extends JFrame {
                 }
 
                 try {
-                    Player jugador = new Player();
-                    jugador.setNombre(nombre);
+                    PlayerDAO playerDAO = new PlayerDAO();
+                    PartidaDAO partidaDAO = new PartidaDAO();
+                    Player jugador = playerDAO.buscarPorNombre(nombre);
+                    
+                    if (jugador.getNombre() == null) {
+                        jugador = new Player();
+                        jugador.setNombre(nombre);
+                        playerDAO.insertar(jugador);
+                        jugador = playerDAO.buscarPorNombre(nombre);
+                        
+                        JOptionPane.showMessageDialog(null, "✅ Jugador nuevo registrado: " + nombre);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "👤 Jugador existente detectado: " + nombre);
+                    }
+                    
+                    Partida existPartida = partidaDAO.buscarPartidaPorJugador(jugador.getIdJugador());
+                    
+                    if(existPartida == null) {
+                        Partida partida = new Partida();
+                        partida.setIdJugador(jugador.getIdJugador());
+                        partida.setPuntos(0);
+                        partida.setEnProgreso(true);
+                        partidaDAO.insertar(partida);
+                    }
 
-                    PlayerDAO dao = new PlayerDAO();
-                    dao.insertar(jugador);
-
-                    JOptionPane.showMessageDialog(null, "✅ Jugador registrado: " + nombre);
-
-                    new GameFrame().setVisible(true);
+                    new GameFrame(nombre).setVisible(true);
                     dispose();
 
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "❌ Error al registrar jugador: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, "❌ Error al iniciar juego: " + ex.getMessage());
                     ex.printStackTrace();
                 }
             }
