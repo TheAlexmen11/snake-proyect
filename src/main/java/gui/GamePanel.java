@@ -9,90 +9,141 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Random;
-import javax.swing.Timer;
 
-public class GamePanel extends javax.swing.JPanel implements ActionListener {
+import javax.swing.*;
 
-    //private final test frame;
-    
+public class GamePanel extends JPanel implements ActionListener {
+
     static final int WIDTH = 500;
     static final int HEIGHT = 500;
     static final int UNIT_SIZE = 20;
     static final int NUMBER_OF_UNITS = (WIDTH * HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
 
-    // coordenadas del snake
-    final int x[] = new int[NUMBER_OF_UNITS];
-    final int y[] = new int[NUMBER_OF_UNITS];
+    final int[] x = new int[NUMBER_OF_UNITS];
+    final int[] y = new int[NUMBER_OF_UNITS];
 
-    // inciializando variables de snake
     int length = 5;
     int foodEaten;
-    int foodX;
-    int foodY;
+    int foodX, foodY;
     char direction = 'D';
-    boolean running = false;
-    Random random;
-    Timer timer;
-    
 
-    public GamePanel() {
-       //this.frame = frame;
-        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        this.setBackground(Color.DARK_GRAY);
-        this.setFocusable(true);
+    boolean running = false;
+    boolean paused = false;
+    boolean gameOver = false;
+
+    Timer timer;
+    Random random;
+
+    GameFrame frame;
+
+    public GamePanel(GameFrame frame) {
+        this.frame = frame;
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setBackground(Color.DARK_GRAY);
+        setFocusable(true);
+        setLayout(null);
+
         random = new Random();
+        addKeyBindings();
         play();
-        initComponents();
     }
 
-    @Override
-    public void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-        draw(graphics);
+    private void addKeyBindings() {
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "togglePause");
+
+        getActionMap().put("togglePause", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameOver) return;
+
+                paused = !paused;
+
+                if (paused) {
+                    timer.stop();
+                    frame.showButtons();
+                } else {
+                    timer.start();
+                    frame.hideButtons();
+                    requestFocusInWindow();
+                }
+
+                repaint();
+            }
+        });
     }
 
     public void play() {
         addFood();
         running = true;
-        timer = new Timer(80, (ActionListener) this);
+        gameOver = false;
+        paused = false;
+        timer = new Timer(80, this);
         timer.start();
     }
 
-    public void checkCollisions() {
-        // Comparar la cabeza con cada parte del cuerpo
-        for (int i = length; i > 0; i--) {
-            if (x[0] == x[i] && y[0] == y[i]) {
-                running = false;
-                break;
-            }
-        }
+    public void restartGame() {
+        direction = 'D';
+        length = 5;
+        foodEaten = 0;
+        running = true;
+        paused = false;
+        gameOver = false;
+        addFood();
+        timer.start();
+        repaint();
     }
 
-    public void draw(Graphics graphics) {
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
+    }
 
-        if (running) {
-            graphics.setColor(new Color(210, 115, 90));
-            graphics.fillOval(foodX, foodY, UNIT_SIZE, UNIT_SIZE);
+    public void draw(Graphics g) {
+        if (running && !paused) {
+            g.setColor(new Color(210, 115, 90));
+            g.fillOval(foodX, foodY, UNIT_SIZE, UNIT_SIZE);
 
-            graphics.setColor(new Color(210, 115, 90));
-            graphics.setColor(Color.white);
-            graphics.fillOval(x[0], y[0], UNIT_SIZE, UNIT_SIZE);
+            g.setColor(Color.white);
+            g.fillOval(x[0], y[0], UNIT_SIZE, UNIT_SIZE);
             for (int i = 1; i < length; i++) {
-                graphics.setColor(new Color(40, 200, 150));
-                graphics.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                g.setColor(new Color(40, 200, 150));
+                g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
             }
 
-            //graphics.setColor(Color.white);
-            //graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
-            //FontMetrics metrics = getFontMetrics(graphics.getFont());
-            //graphics.drawString("Score: " + foodEaten, (WIDTH - metrics.stringWidth("Score: " + foodEaten)) / 2, graphics.getFont().getSize());
-        } else {
-            gameOver(graphics);
+        } else if (paused && !gameOver) {
+            showPausedOverlay(g);
+        }
+
+        if (gameOver) {
+            showGameOver(g);
         }
     }
 
-    public void actionPerformed(ActionEvent arg0) {
-        if (running) {
+    private void showPausedOverlay(Graphics g) {
+        g.setColor(Color.white);
+        g.setFont(new Font("Sans serif", Font.BOLD, 25));
+        FontMetrics metrics = getFontMetrics(g.getFont());
+        g.drawString("Paused", (WIDTH - metrics.stringWidth("Paused")) / 2, HEIGHT / 2 - 40);
+
+        g.setFont(new Font("Sans serif", Font.PLAIN, 20));
+        g.drawString("Score: " + foodEaten, (WIDTH - metrics.stringWidth("Score: " + foodEaten)) / 2, HEIGHT / 2 - 10);
+    }
+
+    private void showGameOver(Graphics g) {
+        g.setColor(Color.red);
+        g.setFont(new Font("Sans serif", Font.BOLD, 50));
+        FontMetrics metrics = getFontMetrics(g.getFont());
+        g.drawString("Game Over", (WIDTH - metrics.stringWidth("Game Over")) / 2, HEIGHT / 2 - 60);
+
+        g.setColor(Color.white);
+        g.setFont(new Font("Sans serif", Font.PLAIN, 25));
+        g.drawString("Score: " + foodEaten, (WIDTH - metrics.stringWidth("Score: " + foodEaten)) / 2, HEIGHT / 2 - 20);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (running && !paused) {
             move();
             checkCollisions();
             checkFood();
@@ -100,7 +151,24 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
         repaint();
     }
 
-    public void checkFood() {
+    private void move() {
+        for (int i = length; i > 0; i--) {
+            x[i] = x[i - 1];
+            y[i] = y[i - 1];
+        }
+
+        switch (direction) {
+            case 'L': x[0] -= UNIT_SIZE; break;
+            case 'R': x[0] += UNIT_SIZE; break;
+            case 'U': y[0] -= UNIT_SIZE; break;
+            case 'D': y[0] += UNIT_SIZE; break;
+        }
+
+        x[0] = Math.floorMod(x[0], WIDTH);
+        y[0] = Math.floorMod(y[0], HEIGHT);
+    }
+
+    private void checkFood() {
         if (x[0] == foodX && y[0] == foodY) {
             length++;
             foodEaten++;
@@ -108,98 +176,50 @@ public class GamePanel extends javax.swing.JPanel implements ActionListener {
         }
     }
 
-    public void move() {
+    private void checkCollisions() {
         for (int i = length; i > 0; i--) {
-
-            x[i] = x[i - 1];
-            y[i] = y[i - 1];
-        }
-
-        if (direction == 'L') {
-            System.out.println("L");
-            x[0] = x[0] - UNIT_SIZE;
-        } else if (direction == 'R') {
-            System.out.println("R");
-            x[0] = x[0] + UNIT_SIZE;
-        } else if (direction == 'U') {
-            y[0] = y[0] - UNIT_SIZE;
-        } else {
-            y[0] = y[0] + UNIT_SIZE;
-        }
-        x[0] = Math.floorMod(x[0], WIDTH);
-        y[0] = Math.floorMod(y[0], HEIGHT);
-    }
-
-    public void addFood() {
-        foodX = random.nextInt((int) (WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-        foodY = random.nextInt((int) (HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
-    }
-
-    public void gameOver(Graphics graphics) {
-        graphics.setColor(Color.red);
-        graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
-        FontMetrics metrics = getFontMetrics(graphics.getFont());
-        graphics.drawString("Game Over", (WIDTH - metrics.stringWidth("Game Over")) / 2, HEIGHT / 2);
-
-        graphics.setColor(Color.white);
-        graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
-        metrics = getFontMetrics(graphics.getFont());
-        graphics.drawString("Score: " + foodEaten, (WIDTH - metrics.stringWidth("Score: " + foodEaten)) / 2, graphics.getFont().getSize());
-
-    }
-
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                formKeyPressed(evt);
+            if (x[0] == x[i] && y[0] == y[i]) {
+                running = false;
+                break;
             }
-        });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 582, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 473, Short.MAX_VALUE)
-        );
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
-        switch (evt.getKeyCode()) {
-            case KeyEvent.VK_LEFT:
-                if (direction != 'R') {
-                    direction = 'L';
-                }
-                break;
-
-            case KeyEvent.VK_RIGHT:
-                if (direction != 'L') {
-                    direction = 'R';
-                }
-                break;
-
-            case KeyEvent.VK_UP:
-                if (direction != 'D') {
-                    direction = 'U';
-                }
-                break;
-
-            case KeyEvent.VK_DOWN:
-                if (direction != 'U') {
-                    direction = 'D';
-                }
-                break;
         }
 
-    }//GEN-LAST:event_formKeyPressed
+        if (!running) {
+            gameOver = true;
+            timer.stop();
+            frame.showButtons();
+        }
+    }
 
+    private void addFood() {
+        foodX = random.nextInt(WIDTH / UNIT_SIZE) * UNIT_SIZE;
+        foodY = random.nextInt(HEIGHT / UNIT_SIZE) * UNIT_SIZE;
+    }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+    @Override
+    protected void processKeyEvent(KeyEvent evt) {
+        if (evt.getID() == KeyEvent.KEY_PRESSED && !paused && running) {
+            switch (evt.getKeyCode()) {
+                case KeyEvent.VK_LEFT: if (direction != 'R') direction = 'L'; break;
+                case KeyEvent.VK_RIGHT: if (direction != 'L') direction = 'R'; break;
+                case KeyEvent.VK_UP: if (direction != 'D') direction = 'U'; break;
+                case KeyEvent.VK_DOWN: if (direction != 'U') direction = 'D'; break;
+            }
+        }
+        super.processKeyEvent(evt);
+    }
+
+    public boolean isGameOver() {
+    return gameOver;
+    }
+
+    public void resumeGame() {
+        if (paused && !gameOver) {
+            paused = false;
+            timer.start();
+            frame.hideButtons();
+            requestFocusInWindow(); // Asegura que reciba eventos del teclado
+        }
+    }
+    
 }

@@ -5,9 +5,6 @@ public class TRanking {
 
     public TRanking() {
     }
-
-    
-    
     
     public TRanking(String nombre, int puntos) {
         this.nombre = nombre;

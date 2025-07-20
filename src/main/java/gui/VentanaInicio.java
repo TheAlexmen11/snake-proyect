@@ -68,21 +68,18 @@ public class VentanaInicio extends JFrame {
         cuadroJuego.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
         fondo.add(cuadroJuego);
 
-        // Botón START
         NeonButton btnStart = new NeonButton("START", new Color(0, 204, 255), new Color(0, 102, 255));
         btnStart.setBounds(130, 270, 100, 35);
         btnStart.setBackground(new Color(0, 204, 255));
         btnStart.setForeground(Color.BLACK);
         fondo.add(btnStart);
 
-        // Botón EXIT
         NeonButton btnExit = new NeonButton("EXIT", new Color(204, 0, 255), new Color(102, 0, 204));
         btnExit.setBounds(260, 270, 100, 35);
         btnExit.setBackground(new Color(204, 0, 255));
         btnExit.setForeground(Color.WHITE);
         fondo.add(btnExit);
 
-        // Acciones
         btnStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,7 +99,6 @@ public class VentanaInicio extends JFrame {
 
                     JOptionPane.showMessageDialog(null, "✅ Jugador registrado: " + nombre);
 
-                    // Redirigir a GameFrame
                     new GameFrame().setVisible(true);
                     dispose();
 

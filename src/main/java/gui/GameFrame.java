@@ -1,67 +1,105 @@
 package gui;
 
+import java.awt.Color;
 import java.awt.Dimension;
-import javax.swing.JFrame;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class GameFrame extends javax.swing.JFrame {
+import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
+
+public class GameFrame extends JFrame {
 
     static final int WIDTH = 515;
     static final int HEIGHT = 535;
+
     GameFondo fondo;
     GamePanel panel;
 
-    public GameFrame() {
+    NeonButton botonInicio;
+    NeonButton botonRanking;
+    NeonButton botonContinuar;
 
-        panel = new GamePanel();
-        this.add(panel);
+    public GameFrame() {
+        super("Snake");
+
+        setLayout(null); // Necesario para posicionar manualmente
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setSize(WIDTH, HEIGHT);
+        setLocationRelativeTo(null);
+
+        // Panel del juego
+        panel = new GamePanel(this);
         panel.setBounds(0, 0, 500, 500);
         panel.setOpaque(false);
+        add(panel);
+
+        // Fondo (detrás del panel)
         fondo = new GameFondo();
-        this.add(fondo);
         fondo.setBounds(0, 0, 500, 500);
+        add(fondo);
 
-        //.setOpaque(false);
-        this.setTitle("snake");
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(WIDTH, HEIGHT + 5));
-        this.setResizable(false);
-        this.pack();
-        this.setVisible(true);
-        //this.setLocationRelativeTo(null);
+        // Botones encima usando LayeredPane
+        initButtons();
 
-        initComponents();
-
+        setVisible(true);
     }
 
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                formKeyPressed(evt);
-            }
+    private void initButtons() {
+        botonInicio = new NeonButton("START", new Color(0, 204, 255), new Color(0, 102, 255));
+        botonInicio.setBounds(150, 260, 200, 40);
+        botonInicio.setVisible(false);
+        botonInicio.addActionListener(e -> {
+            panel.restartGame();
+            hideButtons();
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 708, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 497, Short.MAX_VALUE)
-        );
+        // Botón CONTINUAR
+        botonContinuar = new NeonButton("CONTINUE", new Color(0, 255, 102), new Color(0, 153, 51));
+        botonContinuar.setBounds(150, 260, 200, 40);
+        botonContinuar.setVisible(false);
+        botonContinuar.addActionListener(e -> {
+            panel.resumeGame();
+            hideButtons();
+        });
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
 
-    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_formKeyPressed
+        botonRanking = new NeonButton("RANKING", new Color(0, 204, 255), new Color(0, 102, 255));
+        botonRanking.setBounds(150, 310, 200, 40);
+        botonRanking.setVisible(false);
+        botonRanking.addActionListener(e -> {
+                try {
+                    new FrameRanking().setVisible(true);
+                } catch (SQLException ex) {
+                    Logger.getLogger(FrameRanking.class.getName()).log(Level.SEVERE, null, ex);
+                }
+        });
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+        JLayeredPane layeredPane = getLayeredPane();
+        layeredPane.add(botonInicio, JLayeredPane.POPUP_LAYER);
+        layeredPane.add(botonContinuar, JLayeredPane.POPUP_LAYER);
+        layeredPane.add(botonRanking, JLayeredPane.POPUP_LAYER);
+    }
+
+    public void showButtons() {
+        if (panel.isGameOver()) {
+            botonInicio.setVisible(true);
+            botonContinuar.setVisible(false);
+        } else {
+            botonInicio.setVisible(false);
+            botonContinuar.setVisible(true);
+        }
+        botonRanking.setVisible(true);
+    }
+
+
+    public void hideButtons() {
+        botonInicio.setVisible(false);
+        botonRanking.setVisible(false);
+        botonContinuar.setVisible(false);
+    }
 }
