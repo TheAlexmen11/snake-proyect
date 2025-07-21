@@ -97,7 +97,7 @@ public class VentanaInicio extends JFrame {
                     PartidaDAO partidaDAO = new PartidaDAO();
                     Player jugador = playerDAO.buscarPorNombre(nombre);
                     
-                    if (jugador.getNombre() == null) {
+                    if (jugador == null) {
                         jugador = new Player();
                         jugador.setNombre(nombre);
                         playerDAO.insertar(jugador);

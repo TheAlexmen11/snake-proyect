@@ -203,10 +203,10 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
 
-        if (!running && !gameOver) {
+        if (!running) {
             gameOver = true;
             new Thread(() -> {
-                insertarPartida(nombreJugador, 0, foodX, foodY, false);
+                insertarPartida(nombreJugador,foodEaten , foodX, foodY, false);
             }).start();
             timer.stop();
             frame.showButtons();
